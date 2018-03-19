@@ -53,7 +53,7 @@ index=[0,q_matrix(1)];%initializing the index matrix to store the indexes (To se
 count=2;
 for i=1:x_length-1 %Looping across the index matrix
     if q_matrix(i)~=q_matrix(i+1) %Finding the change in the q value
-        index(count)=i; %if adjacent q_matrix value are not same then storing the index
+        index(count)=i; %if adjacent q_matrix 
         count=count+1;
     end
 end
