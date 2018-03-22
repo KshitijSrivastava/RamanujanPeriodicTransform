@@ -92,26 +92,26 @@ for i=1:q_length %Looping over all the x_q's (Sub component signals)
 end
 
 %%
-signal_energy=abs(x*x');
-total_B_energy=((abs(B_mat(:,1)'*B_mat(:,1))));
-threshold_energy=0.05*signal_energy;
+signal_energy=abs(x*x'); %Finding the energy of the signal
+total_B_energy=((abs(B_mat(:,1)'*B_mat(:,1)))); %Finding the total B_mat energy
+threshold_energy=0.05*signal_energy;%Setting the threshold value 
 
-period_q=[];
+period_q=[]; %Storing q's for finding the period
 
-for i=1:q_length
-    sub_space_energy(i)=((abs(x_q(:,i)'*x_q(:,i))));
-    if sub_space_energy(i)>threshold_energy
-        period_q=[period_q,q(i)];
+for i=1:q_length %looping across the subspace
+    sub_space_energy(i)=((abs(x_q(:,i)'*x_q(:,i)))); %Finding the subspace energy for particular q
+    if sub_space_energy(i)>threshold_energy %If subspce energy>threshold energy 
+        period_q=[period_q,q(i)]; %Storing it in the period_q variable
     end
 end
 
-period_q_length=length(period_q);
+period_q_length=length(period_q); %Finding the period_q_length
 
-init_lcm=1;
+init_lcm=1; %Initializing the lcm
 
-for i=1:period_q_length
-    lcm=lcm(init_lcm,period_q(i));
-    init_lcm=lcm;
+for i=1:period_q_length %Looping across all the periods obtained
+    lcm=lcm(init_lcm,period_q(i)); %Finding the energy for init and ith member of period_q
+    init_lcm=lcm; %init_lcm become equal to lcm for next iteration
 end
 
 %period=lcm(period_q);
