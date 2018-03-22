@@ -2,11 +2,13 @@ clc;
 clear all;
 close all;
 %x=[1,1,1,1]; %Taking the input
-filename='400Hz_Squarewave.wav';%Name of the file
+filename='200Hz_0.8Amp_Sine.wav';%Name of the file
 [myrec,fs] = audioread(filename);%Reading the files
 myrecording = myrec(:,1);%Taking only one sample of the test
-x=myrecording(1:256,1);
+x=myrecording(1:320,1);
+
 x=transpose(x);
+x=x/0.8;
 %x=xcorr(x);
 x_length=length(x);%Finding the length of the input
 sound(x)
@@ -42,10 +44,22 @@ end
 mat=mat(:,2:x_length+1);%Taking the 2nd column to the last column of the matrix 
 mat=round(mat);%Rounding off the matrix
 
-B_mat=(mat.')*transpose(x); %Finding the B matrix
-mdfdCoeff = B_mat.*diag(sqrt(inv(mat.'*mat))); %Finding the modified coefficients
-figure;loglog(abs(mdfdCoeff));title('Normalized Coefficients');
-hold on;loglog(q_matrix,'r');
+flag=1;
+for i=0:10
+    if x_length==2^i
+        flag=0;
+        B_mat=(mat.')*transpose(x); %Finding the B matrix
+        break;
+    end
+end    
+
+if flag==1
+    B_mat=inv(mat)*transpose(x);
+end
+
+%mdfdCoeff = B_mat.*diag(sqrt(inv(mat.'*mat))); %Finding the modified coefficients
+%figure;loglog(abs(mdfdCoeff));title('Normalized Coefficients');
+%hold on;loglog(q_matrix,'r');
 %Plotting the log of modified coefficient and q matrix together
 
 %%
@@ -78,4 +92,26 @@ for i=1:q_length %Looping over all the x_q's (Sub component signals)
 end
 
 %%
- %plot(CXCORR(x,x)); %TO be verified
+signal_energy=abs(x*x');
+total_B_energy=((abs(B_mat(:,1)'*B_mat(:,1))));
+threshold_energy=0.05*signal_energy;
+
+period_q=[];
+
+for i=1:q_length
+    sub_space_energy(i)=((abs(x_q(:,i)'*x_q(:,i))));
+    if sub_space_energy(i)>threshold_energy
+        period_q=[period_q,q(i)];
+    end
+end
+
+period_q_length=length(period_q);
+
+init_lcm=1;
+
+for i=1:period_q_length
+    lcm=lcm(init_lcm,period_q(i));
+    init_lcm=lcm;
+end
+
+%period=lcm(period_q);
