@@ -1,18 +1,11 @@
-clc;
-clear all;
-close all;
-%x=[1,1,1,1]; %Taking the input
-filename='s1_reduced.wav';%Name of the file
-[myrec,fs] = audioread(filename);%Reading the files
-myrecording = myrec(:,1);%Taking only one sample of the test
-x=myrecording(1:77,1);
-%x = cconv(x,fliplr(x),length(x));
+function [ lcm1,max_percent_energy ] = period_estimator_function( x )
+% This function takes Nx1 vector  x as input
+%  It returns the period lcml which is the period and the
+%  max_percent_energy which is the maximum percent energy
 x=transpose(x);
-x=x/0.8;
-%x=xcorr(x);
 x_length=length(x);%Finding the length of the input
-sound(x)
-%%
+
+%% For divisors of N
 count=1;%For storing the index of q's 
 %q=[];
 for i=1:x_length %ranging the q's from 1 to length of the input
@@ -21,9 +14,8 @@ for i=1:x_length %ranging the q's from 1 to length of the input
         count=count+1; %Incrementing the index
     end
 end
-
 q_length=length(q);%Finding the length of q matrix
-
+%% For Making of the matrix
 mat=zeros(x_length,1);%Initial Matrix made
 
 q_matrix=zeros(x_length,1);
@@ -37,12 +29,12 @@ for i=1:q_length %For looping through the various q's
     q_matrix(count,1)=q(i);
     count=count+1;
     mat=horzcat(mat,Cqn_l); %Horizontal catenation  of the column with the matrix
-   end
-    
+   end    
 end
 
 mat=mat(:,2:x_length+1);%Taking the 2nd column to the last column of the matrix 
 mat=round(mat);%Rounding off the matrix
+%% For finding the B matrix
 
 flag=1;
 for i=0:10
@@ -54,15 +46,10 @@ for i=0:10
 end    
 
 if flag==1
-    B_mat=inv(mat)*transpose(x);
+    B_mat=inv(mat)*(x)';
 end
 
-%mdfdCoeff = B_mat.*diag(sqrt(inv(mat.'*mat))); %Finding the modified coefficients
-%figure;loglog(abs(mdfdCoeff));title('Normalized Coefficients');
-%hold on;loglog(q_matrix,'r');
-%Plotting the log of modified coefficient and q matrix together
-
-%%
+%% For finding the index where the q matrix is changing 
 index=[0,q_matrix(1)];%initializing the index matrix to store the indexes (To seperate Subspace)
 count=2;
 for i=1:x_length-1 %Looping across the index matrix
@@ -74,9 +61,7 @@ end
 index(count)=x_length;%Storing the final index in the index variable
 index_length=length(index); %Finding the length of the index variable
 
-%%
-%G=zeros(x_length,1);
-
+%% Subspace signals
 for i=1:index_length-1 %Looping over all the index
     count=1;
     for j=index(i)+1:index(i+1) %For selecting a particular subspace signals
@@ -86,14 +71,8 @@ for i=1:index_length-1 %Looping over all the index
     x_q(:,i)=(G*(inv((G')*G))*G')*x';%Finding the subcomponent signal and storing in ith column
 end
 
-x_reconstruction=zeros(1,x_length); %Initializing the x matrix
-for i=1:q_length %Looping over all the x_q's (Sub component signals)
-    x_reconstruction=x_reconstruction+(x_q(:,i))'; %Summing subcomponent signals
-end
-
-%%
+%% Finding the energy 
 signal_energy=abs(x*x'); %Finding the energy of the signal
-total_B_energy=((abs(B_mat(:,1)'*B_mat(:,1)))); %Finding the total B_mat energy
 threshold_energy=0.05*signal_energy;%Setting the threshold value 
 
 period_q=[]; %Storing q's for finding the period
@@ -106,6 +85,7 @@ for i=1:q_length %looping across the subspace
 end
 
 percent_sub_space_energy=(sub_space_energy*100)/signal_energy;
+max_percent_energy=max(percent_sub_space_energy);
 
 period_q_length=length(period_q); %Finding the period_q_length
 
@@ -116,6 +96,5 @@ period_q_length=length(period_q); %Finding the period_q_length
      init_lcm=lcm1; %init_lcm become equal to lcm for next iteration
  end
 
-%period=lcm(period_q);
+end
 
-%%

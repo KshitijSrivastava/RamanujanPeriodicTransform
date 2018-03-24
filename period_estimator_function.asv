@@ -1,0 +1,67 @@
+function [ period,percent_energy ] = period_estimator_function( x )
+%UNTITLED2 Summary of this function goes here
+%   Detailed explanation goes here
+x=transpose(x);
+x_length=length(x);%Finding the length of the input\
+
+%% For divisors of N
+count=1;%For storing the index of q's 
+%q=[];
+for i=1:x_length %ranging the q's from 1 to length of the input
+    if mod(x_length,i)==0 %If it perfectly divides it
+        q(count)=i;%Storing the q's in the 
+        count=count+1; %Incrementing the index
+    end
+end
+q_length=length(q);%Finding the length of q matrix
+%% For Making of the matrix
+mat=zeros(x_length,1);%Initial Matrix made
+
+q_matrix=zeros(x_length,1);
+count=1;
+for i=1:q_length %For looping through the various q's
+   phi=phi_q(q(i));%Finding the phi(q)
+   
+   for l=0:phi-1  %Looping through 0 to phi(q)-1
+    Cqn_l=Cqnl(q(i),x_length,l); %Outputing one column of the matrix
+    
+    q_matrix(count,1)=q(i);
+    count=count+1;
+    mat=horzcat(mat,Cqn_l); %Horizontal catenation  of the column with the matrix
+   end    
+end
+
+mat=mat(:,2:x_length+1);%Taking the 2nd column to the last column of the matrix 
+mat=round(mat);%Rounding off the matrix
+%% For finding the B matrix
+
+flag=1;
+for i=0:10
+    if x_length==2^i
+        flag=0;
+        B_mat=(mat.')*transpose(x); %Finding the B matrix
+        break;
+    end
+end    
+
+if flag==1
+    B_mat=inv(mat)*transpose(x);
+end
+
+%% For finding the index where the q matrix is changing 
+index=[0,q_matrix(1)];%initializing the index matrix to store the indexes (To seperate Subspace)
+count=2;
+for i=1:x_length-1 %Looping across the index matrix
+    if q_matrix(i)~=q_matrix(i+1) %Finding the change in the q value
+        index(count)=i; %if adjacent q_matrix value are not same then storing the index
+        count=count+1;
+    end
+end
+index(count)=x_length;%Storing the final index in the index variable
+index_length=length(index); %Finding the length of the index variable
+
+%%
+
+
+end
+
